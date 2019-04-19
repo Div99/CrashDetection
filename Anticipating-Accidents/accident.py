@@ -184,6 +184,8 @@ def train():
              _,batch_loss = sess.run([optimizer,loss], feed_dict={x: batch_xs, y: batch_ys, keep: [0.5]})
              epoch_loss[batch-1] = batch_loss/batch_size
 
+         tStop_epoch = time.time()
+
          # log metrics
          run.log('Epoch', epoch+1)
          run.log('training_loss', np.mean(epoch_loss))
@@ -191,7 +193,6 @@ def train():
 
          # print one epoch
          print("Epoch:", epoch+1, " done. Loss:", np.mean(epoch_loss))
-         tStop_epoch = time.time()
          print("Epoch Time Cost:", round(tStop_epoch - tStart_epoch,2), "s")
          sys.stdout.flush()
 
