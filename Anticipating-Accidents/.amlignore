@@ -5,3 +5,5 @@ azureml-logs
 outputs
 azureml-setup
 docs
+dataset
+demo_model

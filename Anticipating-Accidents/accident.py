@@ -31,7 +31,7 @@ dataset = args.data_dir
 train_path = os.path.join(dataset, 'features/training/')
 test_path = os.path.join(dataset, 'features/testing/')
 demo_path = os.path.join(dataset, 'features/testing/')
-save_path = './outputs/'
+save_path = './outputs/model/'
 video_path = os.path.join(dataset, 'videos/testing/positive/')
 
 # batch_number
@@ -162,7 +162,7 @@ def train():
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     # mkdir folder for saving model
     if os.path.isdir(save_path) == False:
-        os.mkdir(save_path)
+        os.makedirs(save_path, exist_ok=True)
     # Initializing the variables
     init = tf.global_variables_initializer()
     # Launch the graph
@@ -177,7 +177,7 @@ def train():
          np.random.shuffle(n_batchs)
          tStart_epoch = time.time()
          for batch in n_batchs:
-             file_name = '%03d' %batch
+             file_name = '%03d' % batch
              batch_data = np.load(train_path+'batch_'+file_name+'.npz')
              batch_xs = batch_data['data']
              batch_ys = batch_data['labels']
@@ -210,7 +210,7 @@ def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
 
     for num_batch in range(1,num+1):
          # load test_data
-         file_name = '%03d' %num_batch
+         file_name = '%03d' % num_batch
          test_all_data = np.load(path+'batch_'+file_name+'.npz')
          test_data = test_all_data['data']
          test_labels = test_all_data['labels']
