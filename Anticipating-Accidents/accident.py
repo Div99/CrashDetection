@@ -28,9 +28,9 @@ def parse_args():
 args = parse_args()
 dataset = args.data_dir
 
-train_path = os.path.join(dataset, 'features/training/')
-test_path = os.path.join(dataset, 'features/testing/')
-demo_path = os.path.join(dataset, 'features/testing/')
+train_path = os.path.join(dataset, 'new_features/training/')
+test_path = os.path.join(dataset, 'new_features/testing/')
+demo_path = os.path.join(dataset, 'new_features/testing/')
 save_path = './outputs/model/'
 video_path = os.path.join(dataset, 'videos/testing/positive/')
 
@@ -48,7 +48,7 @@ batch_size = 10
 display_step = 10
 
 # Network Parameters
-n_input = 4096 # fc6 or fc7(1*4096)
+n_input = 1024 # fc6 or fc7(1*4096)
 n_detection = 20 # number of object of each image (include image features)
 n_hidden = 512 # hidden layer num of LSTM
 n_img_hidden = 256 # embedding image features
