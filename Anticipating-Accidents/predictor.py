@@ -191,7 +191,7 @@ class COCODemo(object):
         return top_predictions, result
 
 
-    def extract_encoding_features(self, original_images):
+    def extract_encoding_features(self, original_images, keep_max=19):
         """
         Arguments:
             original_image (List(np.ndarray)): a list of images as returned by OpenCV
@@ -219,7 +219,7 @@ class COCODemo(object):
             height, width = original_images[ind].shape[:-1]
             # reshape prediction (a BoxList) into the original image size
             prediction = prediction.resize((width, height))
-            detection_bbox = self.select_top_predictions(prediction)
+            detection_bbox = self.select_top_predictions(prediction)[:keep_max]
 
             max_proposals = self.cfg.MODEL.RPN.FPN_POST_NMS_TOP_N_TEST
 
@@ -227,7 +227,7 @@ class COCODemo(object):
                 # Object Feature
                 encoding_features = torch.cat([features[max_proposals*ind+i] for i in detection_bbox.extra_fields['orig_inds']], dim=0)
                 # Mean Image Feature
-                encoding_features = torch.cat([encoding_features, torch.mean(torch.cat(features[max_proposals*ind:max_proposals*ind+max_proposals]), dim=0, keepdim=True)])
+                encoding_features = torch.cat([ torch.mean(torch.cat(features[max_proposals*ind:max_proposals*ind+max_proposals]), dim=0, keepdim=True), encoding_features])
             else:
                 encoding_features = torch.mean(torch.cat(features[max_proposals*ind:max_proposals*ind+max_proposals]), dim=0, keepdim=True)
             detection_bbox.add_field("encoding_features", encoding_features.to(torch.float16))

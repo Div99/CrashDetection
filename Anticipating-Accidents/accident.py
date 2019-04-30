@@ -25,8 +25,11 @@ def parse_args():
 
 ############### Global Parameters ###############
 # path
-args = parse_args()
-dataset = args.data_dir
+# path
+try:
+    dataset = args.dataset
+except NameError:
+    dataset = './dataset'
 
 train_path = os.path.join(dataset, 'new_features/training/')
 test_path = os.path.join(dataset, 'new_features/testing/')
@@ -65,7 +68,7 @@ run = Run.get_context()
 ##################################################
 
 
-def build_model():
+def build_model(batch_size):
 
     # tf Graph input
     x = tf.placeholder("float", [None, n_frames ,n_detection, n_input])
@@ -98,7 +101,7 @@ def build_model():
     # init loss
     loss = 0.0
     # Mask
-    zeros_object = tf.to_float(tf.not_equal(tf.reduce_sum(tf.transpose(x[:,:,1:n_detection,:],[1,2,0,3]),3),0)) # frame x n x b
+    zeros_object = tf.cast(tf.not_equal(tf.reduce_sum(tf.transpose(x[:,:,1:n_detection,:],[1,2,0,3]),3),0), tf.float32) # frame x n x b
     # Start creat graph
     for i in range(n_frames):
       with tf.variable_scope('model',reuse=tf.AUTO_REUSE):
@@ -142,9 +145,9 @@ def build_model():
             all_alphas = tf.concat([all_alphas, temp_alphas],0)
 
         # positive example (exp_loss)
-        pos_loss = -tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-tf.nn.softmax_cross_entropy_with_logits(logits = pred, labels = y))
+        pos_loss = -tf.multiply(tf.exp(-(n_frames-i-1)/20.0),-tf.nn.softmax_cross_entropy_with_logits_v2(logits = pred, labels = y))
         # negative example
-        neg_loss = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits = pred) # Softmax loss
+        neg_loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=y, logits = pred) # Softmax loss
 
         temp_loss = tf.reduce_mean(tf.add(tf.multiply(pos_loss,y[:,1]),tf.multiply(neg_loss,y[:,0])))
         #loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(pred, y))
@@ -157,7 +160,7 @@ def build_model():
 
 def train():
     # build model
-    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
+    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model(batch_size)
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     # mkdir folder for saving model
@@ -326,7 +329,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
 
 def vis(model_path):
     # build model
-    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
+    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model(batch_size)
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
     init = tf.global_variables_initializer()
@@ -389,7 +392,7 @@ def vis(model_path):
 
 def test(model_path):
     # load model
-    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model()
+    x,keep,y,optimizer,loss,lstm_variables,soft_pred,all_alphas = build_model(batch_size)
     # inistal Session
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
     sess = tf.InteractiveSession(config=tf.ConfigProto(allow_soft_placement=True,gpu_options=gpu_options))
@@ -406,6 +409,8 @@ def test(model_path):
 
 
 if __name__ == '__main__':
+    args = parse_args()
+
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     else:
