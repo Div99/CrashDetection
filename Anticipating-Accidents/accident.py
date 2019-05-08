@@ -16,8 +16,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='accident_LSTM')
     parser.add_argument('--mode',dest = 'mode',help='train or test',default = 'demo')
     parser.add_argument('--model',dest = 'model',default='./model/demo_model')
-    parser.add_argument('--gpu',dest = 'gpu',default= '0')
-    parser.add_argument('--data_dir',dest = 'data_dir',default= './dataset')
+    parser.add_argument('--gpu',dest = 'gpu', default= '0')
+    parser.add_argument('--data_dir',dest = 'data_dir', default= './dataset')
 
     args = parser.parse_args()
 
@@ -25,10 +25,10 @@ def parse_args():
 
 ############### Global Parameters ###############
 # path
-# path
 try:
-    dataset = args.dataset
-except NameError:
+    args = parse_args()
+    dataset = args.data_dir
+except SystemExit:
     dataset = './dataset'
 
 train_path = os.path.join(dataset, 'new_features/training/')
@@ -202,13 +202,13 @@ def train():
          if (epoch+1) % 5 == 0:
             saver.save(sess,save_path+"model", global_step = epoch+1)
             print("Training")
-            test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred)
+            test_all(sess,train_num,train_path,x,keep,y,loss,lstm_variables,soft_pred, epoch+1, 'train')
             print("Testing")
-            test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred)
+            test_all(sess,test_num,test_path,x,keep,y,loss,lstm_variables,soft_pred, epoch+1, 'test')
     print("Optimization Finished!")
     saver.save(sess, save_path+"final_model")
 
-def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
+def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred, current_epoch, type):
     total_loss = 0.0
 
     for num_batch in range(1,num+1):
@@ -228,10 +228,12 @@ def test_all(sess,num,path,x,keep,y,loss,lstm_variables,soft_pred):
              all_pred = np.vstack((all_pred,pred[:,0:90]))
              all_labels = np.vstack((all_labels,np.reshape(test_labels[:,1],[batch_size,1])))
 
-    evaluation(all_pred,all_labels)
+    if type == 'train':
+      evaluation(all_pred,all_labels, vis=False, epoch=current_epoch)
+    else:
+      evaluation(all_pred,all_labels, vis=True, epoch=current_epoch)
 
-
-def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None):
+def evaluation(all_pred,all_labels, total_time = 90, vis = True, length = None, epoch = 0):
     ### input: all_pred (N x total_time) , all_label (N,)
     ### where N = number of videos, fps = 20 , time of accident = total_time
     ### output: AP & Time to Accident
@@ -310,6 +312,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
     ### visualize
 
     if vis:
+        plt.clf()
         plt.plot(new_Recall, new_Precision, label='Precision-Recall curve')
         plt.xlabel('Recall')
         plt.ylabel('Precision')
@@ -317,6 +320,8 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         plt.xlim([0.0, 1.0])
         plt.title('Precision-Recall example: AUC={0:0.2f}'.format(AP))
         plt.show()
+        run.log_image('Precision-Recall curve, Epoch:{}'.format(epoch), plot=plt)
+
         plt.clf()
         plt.plot(new_Recall, new_Time, label='Recall-mean_time curve')
         plt.xlabel('Recall')
@@ -325,6 +330,7 @@ def evaluation(all_pred,all_labels, total_time = 90, vis = False, length = None)
         plt.xlim([0.0, 1.0])
         plt.title('Recall-mean_time' )
         plt.show()
+        run.log_image('Recall-mean_time curve, Epoch:{}'.format(epoch), plot=plt)
 
 
 def vis(model_path):
@@ -409,7 +415,6 @@ def test(model_path):
 
 
 if __name__ == '__main__':
-    args = parse_args()
 
     if args.gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
