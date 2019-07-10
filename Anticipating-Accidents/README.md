@@ -1,4 +1,6 @@
-# Anticipating Accidents in Dashcam Videos
+We are very thankful to https://github.com/smallcorgi/Anticipating-Accidents for forming the basis of our project, and allowing us build on their codebase.
+
+## Anticipating Accidents in Dashcam Videos
 By Fu-Hsiang Chan, Yu-Ting Chen, Yu Xiang, Min Sun.
 
 ### Introduction
