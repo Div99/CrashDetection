@@ -5,6 +5,14 @@ Automatic detection and alert of vehicle accidents
   <img src="imgs/poster.png"><br><br>
 </div>
 
+## Example Crash Detection
+<div align="center">
+  <img src="imgs/acc.png"><br><br>
+</div>
+
+Blue boxes are object detected by MaskRCNN.
+Green boxes denote objects predicted to have accidents with high confidence.
+
 ## Setup
 Do `pip install -r requirements.txt`
 
