@@ -6,13 +6,9 @@ Automatic detection and alert of vehicle accidents
 </div>
 
 ## Example Crash Detection
-<div align="center">
-  <img src="imgs/acc.png"><br><br>
-</div>
-<div class="text-purple">
-  This text is purple, <a href="#" class="text-inherit">including the link</a>
-</div>
-<span style="color:blue">Blue boxes</span> are object detected by MaskRCNN.
+<img src="imgs/acc.png" width="600">
+
+Blue boxes denote objects detected by MaskRCNN.
 
 Green boxes denote objects predicted to have accidents with high confidence.
 
